@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
     print('Reading effect.................')
     # read effect
-    effect_path = 'https://raw.githubusercontent.com/uyenbhku/CS231_ImageProcessingProject/main/assets/background/360_F_322897394_X2JQen9I6ECDSsQZoESOJ87dfebaGaAe.jpg'
+    effect_path = 'http://raw.githubusercontent.com/uyenbhku/CS231_ImageProcessingProject/main/assets/background/360_F_322897394_X2JQen9I6ECDSsQZoESOJ87dfebaGaAe.jpg'
     effect = read_asset(effect_path, (640, 480))
     if effect is None: 
         sys.exit(0)
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     print('Reading gif.................')
     # read gif frames
-    gif_path = 'https://raw.githubusercontent.com/uyenbhku/CS231_ImageProcessingProject/main/assets/demo/Y1bY.gif'
+    gif_path = 'http://raw.githubusercontent.com/uyenbhku/CS231_ImageProcessingProject/main/assets/demo/Y1bY.gif'
     gif_frames = read_asset(gif_path)
     if gif_frames is None: 
         sys.exit(0)
