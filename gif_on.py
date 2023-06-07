@@ -6,6 +6,8 @@ import time     # to calculate FPS
 # from keras.models import load_model # load pretrained model
 import numpy as np # processing
 import sys
+import urllib.request
+import imageio
 
 
 
@@ -27,22 +29,31 @@ def read_asset(path, window_size=None):
     asset_extension = path.strip().rsplit('.', maxsplit=1)[1]
     asset = []
     if asset_extension in ('jpg', 'png', 'jpeg'):
-        asset = cv2.imread(path)
+        resp = urllib.request.urlopen(path)
+        asset = np.asarray(bytearray(resp.read()), dtype="uint8")
+        asset = cv2.imdecode(asset, cv2.IMREAD_COLOR)
+
         # auto resize 
         if window_size:
             asset = resize_image(asset)
         asset = cv2.cvtColor(asset, cv2.COLOR_BGR2RGB)
 
     elif asset_extension in ('gif', 'mp4'):
-        asset_gif = cv2.VideoCapture(path)
-        while asset_gif.isOpened():
-            is_success, f = asset_gif.read()
-            if not is_success: 
-                break
-            if window_size:
-                f = resize_image(f)
-            f = cv2.cvtColor(f, cv2.COLOR_BGR2RGB)
-            asset.append(f)
+        resp = urllib.request.urlopen(path).read()
+        open('image.gif',"wb+").write(resp)
+        asset = imageio.mimread('image.gif')
+        for frame in asset:
+            frame = resize_image(frame)
+        
+        # asset_gif = cv2.VideoCapture(path)
+        # while asset_gif.isOpened():
+        #     is_success, f = asset_gif.read()
+        #     if not is_success: 
+        #         break
+        #     if window_size:
+        #         f = resize_image(f)
+        #     f = cv2.cvtColor(f, cv2.COLOR_BGR2RGB)
+        #     asset.append(f)
             
         asset = np.array(asset)
 
