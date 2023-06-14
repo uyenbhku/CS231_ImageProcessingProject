@@ -16,3 +16,16 @@ My team members:
 ## Project Descriptions:
 
 ## Instructions:
+## Repository tree
+```bash
+.
+├── assets/
+│   ├── background/
+│   └── gifs/
+│── audio/
+│── mouth_gif.py
+└── README.md
+ ```
+- ```assets/background``` : containing background/effect image that need blending
+- ```assets/gifs``` : containing gifs/images that need 
+- ```README.md``` : description of this repository
