@@ -1,7 +1,6 @@
 # import dependencies
 import cv2  # connect webcam, process images
 import mediapipe as mp  # holistic API
-import time     # to calculate FPS
 import numpy as np # processing
 import sys
 from pygame import mixer
@@ -57,19 +56,19 @@ def cal_euclidean_distance(lm1, lm2):
     return np.sqrt(np.power(lm1[0] - lm2[0], 2) + np.power(lm1[1] - lm2[1], 2))
 
 
-def mouth_gif():
+def main():
 
     width, height = 1280, 720
     # setting mouth filter
     print('Reading mouth effect.................')
     # read effect
-    effect_path = '.\\assets\\background\\neon_hearts.mp4'
-    effect = read_asset(effect_path, (width, height))
-    if effect is None: 
+    mouth_effect_path = '.\\assets\\background\\neon_hearts.mp4'
+    mouth_effect = read_asset(mouth_effect_path, (width, height))
+    if mouth_effect is None: 
         print('Cannot read mouth effect')
         sys.exit(0)
-    effect_count = 0
-    no_eff_frames = effect.shape[0]
+    mouth_effect_count = 0
+    no_eff_frames = mouth_effect.shape[0]
     # define effect opacity
     alpha = 0.25
 
@@ -109,7 +108,7 @@ def mouth_gif():
     print('Getting webcam feed.................')
     ## define a video capture object, 0 is the webcam
     ## by default, each frame has size (480x640) (height x width)
-    start, end = 0, 0 # helper variables to calculate FPS
+    # start, end = 0, 0 # helper variables to calculate FPS
     demo_path = '.\\assets\\demo\\womanyell.mp4'
     cap = cv2.VideoCapture(0)
     cap.set(3, width)
@@ -127,6 +126,17 @@ def mouth_gif():
     
     choice = 0
 
+    effect = cv2.VideoCapture('./assets/gifs/eff.gif')
+    right_count_1 = 0
+    another_1 = cv2.VideoCapture('./assets/background/morning.gif')
+    another_2 = cv2.VideoCapture('./assets/background/magic.gif')
+    another_3 = cv2.VideoCapture('./assets/background/pink.gif')
+    right_count_2 = 0 
+    left_count_1 = 0
+    left_count_2 = 0
+    right_left_count_1 = 0
+    right_left_count_2 = 0
+
     print('Opening webcam feed........... Press ESC to stop')
     with mp_holistic.Holistic( \
                                 # model_complexity=2,
@@ -135,7 +145,7 @@ def mouth_gif():
                                 min_tracking_confidence=0.5) as holistic:
         # mask = None
         while cap.isOpened():
-            start = time.time()
+            # start = time.time()
             # Capture the video frame by frame
             success, frame = cap.read()
             
@@ -152,7 +162,6 @@ def mouth_gif():
             # to improve performance, mark the image as not writeable to
             # pass by reference instead of making a copy
             frame.flags.writeable = False
-
 
             # detect location
             locations = holistic.process(frame) # store all different kinds of landmarks...
@@ -199,7 +208,7 @@ def mouth_gif():
                         # blend background
                         bg_img = frame.copy()
                         # Create the overlay
-                        frame[mask == 0] = cv2.addWeighted(bg_img, 1-alpha, effect[effect_count%no_eff_frames], alpha, 0.0)[mask == 0]
+                        frame[mask == 0] = cv2.addWeighted(bg_img, 1-alpha, mouth_effect[mouth_effect_count%no_eff_frames], alpha, 0.0)[mask == 0]
                         
                         blurred_bg = cv2.GaussianBlur(frame, (21, 21), 0)
                         frame[face == (255, 255, 255)] = blurred_bg[face == (255, 255, 255)]
@@ -251,7 +260,7 @@ def mouth_gif():
                    
                     # move to next frame of the gif
                     gif_count += 1
-                    effect_count += 1
+                    mouth_effect_count += 1
 
             #### pose filter
             if (choice == 2):
@@ -400,13 +409,149 @@ def mouth_gif():
                     else:
                         mixer.music.stop()
                         count_sound = 1
+            if (choice == 3):
+                # get frame shape
+                fr_w, fr_h, fr_c = frame.shape
+                # blending variable
+                alpha = 0
+                beta = 0.1
+                gamma = 0.6
 
+                if locations.left_hand_landmarks and locations.right_hand_landmarks:
+                    if abs(locations.left_hand_landmarks.landmark[3].x - locations.left_hand_landmarks.landmark[6].x) < 0.05 and abs(locations.left_hand_landmarks.landmark[3].y - locations.left_hand_landmarks.landmark[6].y) < 0.05 and abs(locations.right_hand_landmarks.landmark[3].x - locations.right_hand_landmarks.landmark[6].x) < 0.05 and abs(locations.right_hand_landmarks.landmark[3].y - locations.right_hand_landmarks.landmark[6].y) < 0.05:
+                    
+                        right_left_count_1+=1
+                        if right_left_count_1 == effect.get(cv2.CAP_PROP_FRAME_COUNT):
+                            effect.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            right_left_count_1 = 0
+                        right_left_count_2+=1
+                        if right_left_count_2 == another_3.get(cv2.CAP_PROP_FRAME_COUNT):
+                            another_1.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            right_left_count_2 = 0
+
+                        okay, bg = effect.read()
+                        if not okay:
+                            continue
+                        ok, eff = another_3.read()
+                        if not ok:
+                            continue
+                        w, h, c = bg.shape
+                        e_w, e_h, e_c = eff.shape
+                        eff = cv2.resize(eff, (fr_h, fr_w))
+                        x = int(locations.left_hand_landmarks.landmark[3].x *fr_h)
+                        y = int(locations.left_hand_landmarks.landmark[3].y *fr_w)
+                        z = int(locations.right_hand_landmarks.landmark[3].x *fr_h)
+                        t = int(locations.right_hand_landmarks.landmark[3].y *fr_w)
+                        
+                        translation_matrix_1 = np.array([ [1, 0, int(x-h/2)] ,[0, 1, int(y-w/2)]], dtype=np.float32)
+                        translated_bg_1 = cv2.warpAffine(src=bg, M=translation_matrix_1, dsize=(fr_h, fr_w))
+                        translation_matrix_2 = np.array([ [1, 0, int(z-h/2)] ,[0, 1, int(t-w/2)]], dtype=np.float32)
+                        translated_bg_2 = cv2.warpAffine(src=bg, M=translation_matrix_2, dsize=(fr_h, fr_w))
+                        gif_1 = cv2.cvtColor(translated_bg_1, cv2.COLOR_BGR2GRAY)
+                        gif_2 = cv2.cvtColor(translated_bg_2, cv2.COLOR_BGR2GRAY)
+                        mask = locations.segmentation_mask.copy()
+                        mask[mask <= 0.75] = 0
+                        mask = (mask*255).astype('uint8')
+                        edges = cv2.Canny(mask,200,200)
+                        contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                        frame[mask < 0.05] = frame[mask < 0.05] * beta + eff[mask < 0.05] * (1 - beta)
+                        blur = cv2.GaussianBlur(frame, (21, 21), 0)
+                        cv2.drawContours(mask, contours, -1, (100), 10)
+                        frame[mask==100] = blur[mask==100]
+                        gif_1[gif_1==0] = 255
+                        frame[gif_1<255] = cv2.addWeighted(frame, alpha, translated_bg_1, 1 - alpha, 0)[gif_1<255]
+                        gif_2[gif_2==0] = 255
+                        frame[gif_2<255] = cv2.addWeighted(frame, alpha, translated_bg_2, 1 - alpha, 0)[gif_2<255]
+
+                        # mp_drawing.draw_landmarks(frame, locations.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+                        # mp_drawing.draw_landmarks(frame, locations.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+                
+                if locations.left_hand_landmarks and locations.right_hand_landmarks is None:
+                    if abs(locations.left_hand_landmarks.landmark[3].x - locations.left_hand_landmarks.landmark[6].x) < 0.05 and abs(locations.left_hand_landmarks.landmark[3].y - locations.left_hand_landmarks.landmark[6].y) < 0.05:
+                        # alpha = np.multiply(alpha, 1.0/255)
+                        left_count_1+=1
+                        if left_count_1 == effect.get(cv2.CAP_PROP_FRAME_COUNT):
+                            effect.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            left_count_1 = 0
+                        left_count_2+=1
+                        if left_count_2 == another_1.get(cv2.CAP_PROP_FRAME_COUNT):
+                            another_1.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            left_count_2 = 0
+
+                        okay, bg = effect.read()
+                        if not okay:
+                            continue
+                        _, eff = another_1.read()
+                        
+                        w, h, c = bg.shape
+                        e_w, e_h, e_c = eff.shape
+                        eff = cv2.resize(eff, (fr_h, fr_w))
+                        x = int(locations.left_hand_landmarks.landmark[3].x *fr_h)
+                        y = int(locations.left_hand_landmarks.landmark[3].y *fr_w)
+
+                        # print(locations.left_hand_landmarks.landmark[3].z)
+                        translation_matrix = np.array([ [1, 0, int(x-h/2)] ,[0, 1, int(y-w/2)]], dtype=np.float32)
+                        translated_bg = cv2.warpAffine(src=bg, M=translation_matrix, dsize=(fr_h, fr_w))
+                        gif = cv2.cvtColor(translated_bg, cv2.COLOR_BGR2GRAY)
+                        mask = locations.segmentation_mask.copy()
+                        mask[mask <= 0.75] = 0
+                        mask = (mask*255).astype('uint8')
+                        edges = cv2.Canny(mask,200,200)
+                        contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                        frame[mask < 0.05] = frame[mask < 0.05] * beta + eff[mask < 0.05] * (1 - beta)
+                        blur = cv2.GaussianBlur(frame, (21, 21), 0)
+                        cv2.drawContours(mask, contours, -1, (100), 10)
+                        frame[mask==100] = blur[mask==100]
+                        gif[gif==0] = 255
+                        frame[gif<255] = cv2.addWeighted(frame, alpha, translated_bg, 1 - alpha, 0)[gif<255]
+                            
+                    # mp_drawing.draw_landmarks(frame, locations.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+                    
+                if locations.right_hand_landmarks and locations.left_hand_landmarks is None:
+                    # thumb = [locations.left_hand_landmarks.landmark[1].x - locations.left_hand_landmarks.landmark[4].x, locations.left_hand_landmarks.landmark[1].y - locations.left_hand_landmarks.landmark[4].y]
+                    # index = [locations.left_hand_landmarks.landmark[5].x - locations.left_hand_landmarks.landmark[8].x, locations.left_hand_landmarks.landmark[5].y - locations.left_hand_landmarks.landmark[8].y]
+                    if abs(locations.right_hand_landmarks.landmark[3].x - locations.right_hand_landmarks.landmark[6].x) < 0.05 and abs(locations.right_hand_landmarks.landmark[3].y - locations.right_hand_landmarks.landmark[6].y) < 0.05:
+                        # alpha = np.multiply(alpha, 1.0/255)
+                        right_count_1+=1
+                        if right_count_1 == effect.get(cv2.CAP_PROP_FRAME_COUNT):
+                            effect.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            right_count_1 = 0
+                        right_count_2+=1
+                        if right_count_2 == another_2.get(cv2.CAP_PROP_FRAME_COUNT):
+                            another_2.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            right_count_2 = 0
+                        okay, bg = effect.read()
+                        if not okay:
+                            continue
+                        _, eff = another_2.read()
+                    
+                        w, h, c = bg.shape
+                        e_w, e_h, e_c = eff.shape
+
+                        eff = cv2.resize(eff, (fr_h, fr_w))
+                        x = int(locations.right_hand_landmarks.landmark[3].x *fr_h)
+                        y = int(locations.right_hand_landmarks.landmark[3].y *fr_w)
+                        translation_matrix = np.array([ [1, 0, int(x-h/2)] ,[0, 1, int(y-w/2)]], dtype=np.float32)
+                        translated_bg = cv2.warpAffine(src=bg, M=translation_matrix, dsize=(fr_h, fr_w))
+                        gif = cv2.cvtColor(translated_bg, cv2.COLOR_BGR2GRAY)
+                        mask = locations.segmentation_mask.copy()
+                        mask[mask <= 0.75] = 0
+                        mask = (mask*255).astype('uint8')
+                        edges = cv2.Canny(mask,200,200)
+                        contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                        blend = frame[int(y-w/2):int(y+w/2), int(x-h/2):int(x+h/2), :]
+                        frame[mask != 0] = frame[mask != 0] * gamma + eff[mask != 0] * (1 - gamma)
+                        blur = cv2.GaussianBlur(frame, (21, 21), 0)
+                        cv2.drawContours(mask, contours, -1, (100), 10)
+                        frame[mask==100] = blur[mask==100]
+                        gif[gif==0] = 255
+                        frame[gif<255] = cv2.addWeighted(frame, alpha, translated_bg, 1 - alpha, 0)[gif<255]
 
             # calculate how long this code takes to process a frame on a CPU
-            end = time.time()  
-            fps = 1/(end - start)
-            # display FPS on the frame
-            cv2.putText(frame, str(f'FPS: {int(fps)}'), (10, 70), cv2.FONT_HERSHEY_COMPLEX, 3, (255, 255, 255), 3)
+            # end = time.time()  
+            # fps = 1/(end - start)
+            # # display FPS on the frame
+            # cv2.putText(frame, str(f'FPS: {int(fps)}'), (10, 70), cv2.FONT_HERSHEY_COMPLEX, 3, (255, 255, 255), 3)
             
             # Display the resulting frame
             cv2.imshow('Webcam Feed', frame)
@@ -442,4 +587,4 @@ def mouth_gif():
 
 
 if __name__ == '__main__':
-    mouth_gif()
+    main()
