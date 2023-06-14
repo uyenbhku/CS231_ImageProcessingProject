@@ -104,7 +104,7 @@ if __name__ == '__main__':
                     if (count_sound == 1):
                         mixer.music.play()
                         count_sound = 0
-
+                    frame[results.segmentation_mask > 0.5] = cv2.bitwise_not(frame)[results.segmentation_mask > 0.5]
                     # Read a frame from angel_wings animation video
                     _, angel_wings_frame = angel_wings_animation.read()
     
