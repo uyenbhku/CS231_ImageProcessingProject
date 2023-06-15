@@ -120,7 +120,7 @@ def main():
     # Initiate holistic model
     mp_holistic = mp.solutions.holistic # a Holistic class object
 
-    OPENED_THRESHOLD = 110 # DEGREES
+    OPENED_THRESHOLD = 125 # DEGREES
     PI = 57.2958
     tightness = .3
     
@@ -410,15 +410,25 @@ def main():
                         mixer.music.stop()
                         count_sound = 1
             if (choice == 3):
+                # frame = cv2.rotate(frame, cv2.ROTATE_180)
+                # to improve performance, mark the image as not writeable to pass by reference instead of making a copy
+                frame.flags.writeable = False
+                # make detection
+                # store all different kinds of landmarks...
+                results = holistic.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                # enable drawing landmark annotation on the frame
+                frame.flags.writeable = True 
                 # get frame shape
                 fr_w, fr_h, fr_c = frame.shape
                 # blending variable
                 alpha = 0
-                beta = 0.1
+                beta = 0.05
                 gamma = 0.6
 
-                if locations.left_hand_landmarks and locations.right_hand_landmarks:
-                    if abs(locations.left_hand_landmarks.landmark[3].x - locations.left_hand_landmarks.landmark[6].x) < 0.05 and abs(locations.left_hand_landmarks.landmark[3].y - locations.left_hand_landmarks.landmark[6].y) < 0.05 and abs(locations.right_hand_landmarks.landmark[3].x - locations.right_hand_landmarks.landmark[6].x) < 0.05 and abs(locations.right_hand_landmarks.landmark[3].y - locations.right_hand_landmarks.landmark[6].y) < 0.05:
+                if results.left_hand_landmarks and results.right_hand_landmarks:
+                    right_count_1 = 0
+                    left_count_1 = 0
+                    if abs(results.left_hand_landmarks.landmark[3].x - results.left_hand_landmarks.landmark[6].x) < 0.05 and abs(results.left_hand_landmarks.landmark[3].y - results.left_hand_landmarks.landmark[6].y) < 0.05 and abs(results.right_hand_landmarks.landmark[3].x - results.right_hand_landmarks.landmark[6].x) < 0.05 and abs(results.right_hand_landmarks.landmark[3].y - results.right_hand_landmarks.landmark[6].y) < 0.05:
                     
                         right_left_count_1+=1
                         if right_left_count_1 == effect.get(cv2.CAP_PROP_FRAME_COUNT):
@@ -435,21 +445,23 @@ def main():
                         ok, eff = another_3.read()
                         if not ok:
                             continue
+                        ratio = float(right_left_count_1)/effect.get(cv2.CAP_PROP_FRAME_COUNT)
+                        bg = cv2.resize(bg, (int(bg.shape[1]*(1+ratio*3)), int(bg.shape[0]*(1+ratio*3))))
                         w, h, c = bg.shape
                         e_w, e_h, e_c = eff.shape
                         eff = cv2.resize(eff, (fr_h, fr_w))
-                        x = int(locations.left_hand_landmarks.landmark[3].x *fr_h)
-                        y = int(locations.left_hand_landmarks.landmark[3].y *fr_w)
-                        z = int(locations.right_hand_landmarks.landmark[3].x *fr_h)
-                        t = int(locations.right_hand_landmarks.landmark[3].y *fr_w)
+                        x = int(results.left_hand_landmarks.landmark[3].x *fr_h)
+                        y = int(results.left_hand_landmarks.landmark[3].y *fr_w)
+                        z = int(results.right_hand_landmarks.landmark[3].x *fr_h)
+                        t = int(results.right_hand_landmarks.landmark[3].y *fr_w)
                         
                         translation_matrix_1 = np.array([ [1, 0, int(x-h/2)] ,[0, 1, int(y-w/2)]], dtype=np.float32)
                         translated_bg_1 = cv2.warpAffine(src=bg, M=translation_matrix_1, dsize=(fr_h, fr_w))
                         translation_matrix_2 = np.array([ [1, 0, int(z-h/2)] ,[0, 1, int(t-w/2)]], dtype=np.float32)
-                        translated_bg_2 = cv2.warpAffine(src=bg, M=translation_matrix_2, dsize=(fr_h, fr_w))
+                        translated_bg_2 = cv2.warpAffine(src=cv2.flip(bg, 1), M=translation_matrix_2, dsize=(fr_h, fr_w))
                         gif_1 = cv2.cvtColor(translated_bg_1, cv2.COLOR_BGR2GRAY)
                         gif_2 = cv2.cvtColor(translated_bg_2, cv2.COLOR_BGR2GRAY)
-                        mask = locations.segmentation_mask.copy()
+                        mask = results.segmentation_mask.copy()
                         mask[mask <= 0.75] = 0
                         mask = (mask*255).astype('uint8')
                         edges = cv2.Canny(mask,200,200)
@@ -459,16 +471,17 @@ def main():
                         cv2.drawContours(mask, contours, -1, (100), 10)
                         frame[mask==100] = blur[mask==100]
                         gif_1[gif_1==0] = 255
-                        frame[gif_1<255] = cv2.addWeighted(frame, alpha, translated_bg_1, 1 - alpha, 0)[gif_1<255]
+                        frame[gif_1<255] = cv2.addWeighted(frame, alpha + ratio, translated_bg_1, 1 - alpha - ratio, 0)[gif_1<255]
                         gif_2[gif_2==0] = 255
-                        frame[gif_2<255] = cv2.addWeighted(frame, alpha, translated_bg_2, 1 - alpha, 0)[gif_2<255]
+                        frame[gif_2<255] = cv2.addWeighted(frame, alpha + ratio, translated_bg_2, 1 - alpha - ratio, 0)[gif_2<255]
 
-                        # mp_drawing.draw_landmarks(frame, locations.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
-                        # mp_drawing.draw_landmarks(frame, locations.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+                        # mp_drawing.draw_landmarks(frame, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+                        # mp_drawing.draw_landmarks(frame, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
                 
-                if locations.left_hand_landmarks and locations.right_hand_landmarks is None:
-                    if abs(locations.left_hand_landmarks.landmark[3].x - locations.left_hand_landmarks.landmark[6].x) < 0.05 and abs(locations.left_hand_landmarks.landmark[3].y - locations.left_hand_landmarks.landmark[6].y) < 0.05:
-                        # alpha = np.multiply(alpha, 1.0/255)
+                if results.left_hand_landmarks and results.right_hand_landmarks is None:
+                    right_count_1 = 0
+                    right_left_count_1 = 0
+                    if abs(results.left_hand_landmarks.landmark[3].x - results.left_hand_landmarks.landmark[6].x) < 0.05 and abs(results.left_hand_landmarks.landmark[3].y - results.left_hand_landmarks.landmark[6].y) < 0.05:
                         left_count_1+=1
                         if left_count_1 == effect.get(cv2.CAP_PROP_FRAME_COUNT):
                             effect.set(cv2.CAP_PROP_POS_FRAMES, 0)
@@ -477,23 +490,23 @@ def main():
                         if left_count_2 == another_1.get(cv2.CAP_PROP_FRAME_COUNT):
                             another_1.set(cv2.CAP_PROP_POS_FRAMES, 0)
                             left_count_2 = 0
-
+                        
                         okay, bg = effect.read()
                         if not okay:
                             continue
                         _, eff = another_1.read()
-                        
+                        ratio = float(left_count_1)/effect.get(cv2.CAP_PROP_FRAME_COUNT)
+                        bg = cv2.resize(bg, (int(bg.shape[1]*(1+ratio*3)), int(bg.shape[0]*(1+ratio*3))))
                         w, h, c = bg.shape
                         e_w, e_h, e_c = eff.shape
                         eff = cv2.resize(eff, (fr_h, fr_w))
-                        x = int(locations.left_hand_landmarks.landmark[3].x *fr_h)
-                        y = int(locations.left_hand_landmarks.landmark[3].y *fr_w)
+                        x = int(results.left_hand_landmarks.landmark[3].x *fr_h)
+                        y = int(results.left_hand_landmarks.landmark[3].y *fr_w)
 
-                        # print(locations.left_hand_landmarks.landmark[3].z)
                         translation_matrix = np.array([ [1, 0, int(x-h/2)] ,[0, 1, int(y-w/2)]], dtype=np.float32)
                         translated_bg = cv2.warpAffine(src=bg, M=translation_matrix, dsize=(fr_h, fr_w))
                         gif = cv2.cvtColor(translated_bg, cv2.COLOR_BGR2GRAY)
-                        mask = locations.segmentation_mask.copy()
+                        mask = results.segmentation_mask.copy()
                         mask[mask <= 0.75] = 0
                         mask = (mask*255).astype('uint8')
                         edges = cv2.Canny(mask,200,200)
@@ -503,15 +516,14 @@ def main():
                         cv2.drawContours(mask, contours, -1, (100), 10)
                         frame[mask==100] = blur[mask==100]
                         gif[gif==0] = 255
-                        frame[gif<255] = cv2.addWeighted(frame, alpha, translated_bg, 1 - alpha, 0)[gif<255]
+                        frame[gif<255] = cv2.addWeighted(frame, alpha + ratio, translated_bg, 1 - alpha - ratio, 0)[gif<255]
                             
-                    # mp_drawing.draw_landmarks(frame, locations.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+                    # mp_drawing.draw_landmarks(frame, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
                     
-                if locations.right_hand_landmarks and locations.left_hand_landmarks is None:
-                    # thumb = [locations.left_hand_landmarks.landmark[1].x - locations.left_hand_landmarks.landmark[4].x, locations.left_hand_landmarks.landmark[1].y - locations.left_hand_landmarks.landmark[4].y]
-                    # index = [locations.left_hand_landmarks.landmark[5].x - locations.left_hand_landmarks.landmark[8].x, locations.left_hand_landmarks.landmark[5].y - locations.left_hand_landmarks.landmark[8].y]
-                    if abs(locations.right_hand_landmarks.landmark[3].x - locations.right_hand_landmarks.landmark[6].x) < 0.05 and abs(locations.right_hand_landmarks.landmark[3].y - locations.right_hand_landmarks.landmark[6].y) < 0.05:
-                        # alpha = np.multiply(alpha, 1.0/255)
+                if results.right_hand_landmarks and results.left_hand_landmarks is None:
+                    left_count_1 = 0
+                    right_left_count_1 = 0
+                    if abs(results.right_hand_landmarks.landmark[3].x - results.right_hand_landmarks.landmark[6].x) < 0.05 and abs(results.right_hand_landmarks.landmark[3].y - results.right_hand_landmarks.landmark[6].y) < 0.05:
                         right_count_1+=1
                         if right_count_1 == effect.get(cv2.CAP_PROP_FRAME_COUNT):
                             effect.set(cv2.CAP_PROP_POS_FRAMES, 0)
@@ -524,20 +536,21 @@ def main():
                         if not okay:
                             continue
                         _, eff = another_2.read()
-                    
+                        ratio = float(right_count_1)/effect.get(cv2.CAP_PROP_FRAME_COUNT)
+                        bg = cv2.resize(bg, (int(bg.shape[1]*(1+ratio*3)), int(bg.shape[0]*(1+ratio*3))))
                         w, h, c = bg.shape
                         e_w, e_h, e_c = eff.shape
 
                         eff = cv2.resize(eff, (fr_h, fr_w))
-                        x = int(locations.right_hand_landmarks.landmark[3].x *fr_h)
-                        y = int(locations.right_hand_landmarks.landmark[3].y *fr_w)
+                        x = int(results.right_hand_landmarks.landmark[3].x *fr_h)
+                        y = int(results.right_hand_landmarks.landmark[3].y *fr_w)
                         translation_matrix = np.array([ [1, 0, int(x-h/2)] ,[0, 1, int(y-w/2)]], dtype=np.float32)
                         translated_bg = cv2.warpAffine(src=bg, M=translation_matrix, dsize=(fr_h, fr_w))
                         gif = cv2.cvtColor(translated_bg, cv2.COLOR_BGR2GRAY)
-                        mask = locations.segmentation_mask.copy()
+                        mask = results.segmentation_mask.copy()
                         mask[mask <= 0.75] = 0
                         mask = (mask*255).astype('uint8')
-                        edges = cv2.Canny(mask,200,200)
+                        edges = cv2.Canny(mask,100,200)
                         contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                         blend = frame[int(y-w/2):int(y+w/2), int(x-h/2):int(x+h/2), :]
                         frame[mask != 0] = frame[mask != 0] * gamma + eff[mask != 0] * (1 - gamma)
@@ -545,7 +558,8 @@ def main():
                         cv2.drawContours(mask, contours, -1, (100), 10)
                         frame[mask==100] = blur[mask==100]
                         gif[gif==0] = 255
-                        frame[gif<255] = cv2.addWeighted(frame, alpha, translated_bg, 1 - alpha, 0)[gif<255]
+                        frame[gif<255] = cv2.addWeighted(frame, alpha + ratio, translated_bg, 1 - alpha - ratio, 0)[gif<255]
+
 
             # calculate how long this code takes to process a frame on a CPU
             # end = time.time()  
