@@ -1,9 +1,6 @@
 # CS231_ImageProcessingProject
 
 ## Contributors:
-
-This is our final project for class CS231.N21
-
 Instructor: TS. Nguyen Vinh Tiep
 
 My team members:
@@ -16,7 +13,7 @@ My team members:
 ## Project Descriptions:
 Our final project for the Image Processing class. 
 
-For Vietnamese only: read my pdf file to understand how we did this!
+For Vietnamese only: read my our presentation [here](https://www.canva.com/design/DAFli0HXvnY/4q1tSy-RZyL_QiJk0eV5lQ/edit?analyticsCorrelationId=5253177c-d63f-4bcc-a7c6-827fadccfa5f) to understand how we did this!
 
 
 ## Instructions:
