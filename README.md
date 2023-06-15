@@ -22,7 +22,7 @@ Requirements: MediaPipe, Pygame, OpenCV, NumPy
 Run `python main.py` to execute the code. \
 Press 1 to turn on mouth filter. \
 Press 2 to turn on pose filter. \
-Press 3 to turn on hand filter. \
+Press 3 to turn on hand filter. 
 
 ## Repository tree
 ```bash
