@@ -31,7 +31,11 @@ Press 3 to turn on hand filter. \
 │   ├── background/
 │   └── gifs/
 │── audio/
+│── main.py
+│── baseline.py
 │── mouth_gif.py
+│── hand_gif.py
+│── pose_gif.py
 └── README.md
  ```
 - ```assets/background``` : containing background/effect image that need blending
