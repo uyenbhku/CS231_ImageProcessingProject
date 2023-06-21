@@ -193,14 +193,15 @@ def main():
                     vector_2 = mouth_landmarks[4] - mouth_landmarks[0]
                     angle = np.arccos(np.dot(vector_1 / np.linalg.norm(vector_1), \
                                                         vector_2 / np.linalg.norm(vector_2))) * PI
-                    
+                    # if mouth is opened
                     if angle < OPENED_THRESHOLD: 
-
+                        
+                        # get the mask of the background
                         mask = np.zeros((height, width), dtype='uint8')
                         mask[locations.segmentation_mask > tightness] = 255
                         face = cv2.bitwise_and(frame, frame, mask=mask)
 
-                        # Find Canny edges
+                        # Find Canny edges of the mask
                         edged = cv2.Canny(mask, 30, 200)
                         contours, _ = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                         face = cv2.drawContours(face, contours, -1, (255, 255, 255), 10)
@@ -231,7 +232,7 @@ def main():
                         gif_frame = cv2.warpAffine(src=gif_frame, M=translation_matrix, \
                                                     dsize=(width, height), \
                                                     borderMode=cv2.BORDER_REPLICATE) 
-                       
+                        # rotation
                         center_x = int(abs(mouth_landmarks[0][0] + mouth_landmarks[1][0]) / 2)
                         center_y = int(abs(mouth_landmarks[2][1] + mouth_landmarks[3][1]) / 2)
                         
@@ -239,10 +240,12 @@ def main():
                                         int((- mouth_landmarks[0][1] + mouth_landmarks[1][1]))]
 
                         vector_2 = [1, 0]
+                        # calculate angle to rotate and convert to degree
                         angle = np.arccos(np.dot(vector_1 / np.linalg.norm(vector_1), \
                                                     vector_2 / np.linalg.norm(vector_2)))*57.2958
                         if (mouth_landmarks[0][1] < mouth_landmarks[1][1]): angle *= -1
 
+                        # create rotate matrix and rotate
                         rotate_matrix = cv2.getRotationMatrix2D(center=(center_x, center_y), angle=angle, scale=1.5)
                         gif_frame = cv2.warpAffine(src=gif_frame, M=rotate_matrix, \
                                                     dsize=(width, height), \
@@ -584,11 +587,11 @@ def main():
                 mixer.music.play(-1)
                 # pause 
                 mixer.music.pause()
-            elif key == ord('2'): # press 1 to turn on pose filter
+            elif key == ord('2'): # press 2 to turn on pose filter
                 choice = 2
                 mixer.init()
                 mixer.music.load(pose_audio_path)
-            elif key == ord('3'): # press 1 to turn on hand filter
+            elif key == ord('3'): # press 3 to turn on hand filter
                 choice = 3
 
     # After the loop release the cap object

@@ -17,12 +17,14 @@ For Vietnamese only: read my our presentation [here](https://www.canva.com/desig
 
 
 ## Instructions:
-Requirements: MediaPipe, Pygame, OpenCV, NumPy
+Requirements: Python3, MediaPipe, Pygame, OpenCV, NumPy
 
-Run `python main.py` to execute the code. \
-Press 1 to turn on mouth filter. \
-Press 2 to turn on pose filter. \
-Press 3 to turn on hand filter. 
+Step 1: Execute the code `python main.py`. \
+Step 2:
+- Press 1 to turn on mouth filter.
+- Press 2 to turn on pose filter. 
+- Press 3 to turn on hand filter. 
+- Press ESC to terminate the program.
 
 ## Repository tree
 ```bash
@@ -31,17 +33,15 @@ Press 3 to turn on hand filter.
 │   ├── background/
 │   └── gifs/
 │── audio/
+│── dev_files/
 │── main.py
-│── baseline.py
-│── mouth_gif.py
-│── hand_gif.py
-│── pose_gif.py
+│── requirements.txt
 └── README.md
  ```
 - ```assets/background``` : containing background/effect image that need blending
 - ```assets/gifs``` : containing gifs/images that need adding
 - ```audio/``` : containing audios for the filters
+- ```dev_files/``` : containing `.py` files that we just used to develop each filter
 - ```README.md``` : description of this repository
-- ```main.py``` : our full program
-- ```baseline.py``` : to demo/preview landmarks
-- Other `.py` files just for developing stages.
+- ```main.py``` : our app
+- ```requirements.txt``` : required packages to run our app
