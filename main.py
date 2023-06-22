@@ -126,16 +126,16 @@ def main():
     
     choice = 0
 
-    effect = cv2.VideoCapture('./assets/gifs/eff.gif')
-    right_count_1 = 0
-    another_1 = cv2.VideoCapture('./assets/background/morning.gif')
-    another_2 = cv2.VideoCapture('./assets/background/magic.gif')
-    another_3 = cv2.VideoCapture('./assets/background/pink.gif')
-    right_count_2 = 0 
-    left_count_1 = 0
-    left_count_2 = 0
-    right_left_count_1 = 0
-    right_left_count_2 = 0
+    hand_effect = cv2.VideoCapture('./assets/gifs/eff.gif')
+    hand_effect_count = 0
+    morning = cv2.VideoCapture('./assets/background/morning.gif')
+    magic = cv2.VideoCapture('./assets/background/magic.gif')
+    pink = cv2.VideoCapture('./assets/background/pink.gif')
+    magic_count = 0 
+    hand_effect_count = 0
+    morning_count = 0
+    hand_effect_count = 0
+    pink_count = 0
 
     print('Opening webcam feed........... Press ESC to stop')
     with mp_holistic.Holistic( \
@@ -431,26 +431,26 @@ def main():
                 gamma = 0.6
 
                 if results.left_hand_landmarks and results.right_hand_landmarks:
-                    right_count_1 = 0
-                    left_count_1 = 0
-                    if abs(results.left_hand_landmarks.landmark[3].x - results.left_hand_landmarks.landmark[6].x) < 0.05 and abs(results.left_hand_landmarks.landmark[3].y - results.left_hand_landmarks.landmark[6].y) < 0.05 and abs(results.right_hand_landmarks.landmark[3].x - results.right_hand_landmarks.landmark[6].x) < 0.05 and abs(results.right_hand_landmarks.landmark[3].y - results.right_hand_landmarks.landmark[6].y) < 0.05:
+                    # hand_effect_count = 0
+                    # hand_effect_count = 0
+                    if abs(results.left_hand_landmarks.landmark[3].x - results.left_hand_landmarks.landmark[6].x) < 0.05 \
+                        and abs(results.left_hand_landmarks.landmark[3].y - results.left_hand_landmarks.landmark[6].y) < 0.05 \
+                        and abs(results.right_hand_landmarks.landmark[3].x - results.right_hand_landmarks.landmark[6].x) < 0.05 \
+                        and abs(results.right_hand_landmarks.landmark[3].y - results.right_hand_landmarks.landmark[6].y) < 0.05:
                     
-                        right_left_count_1+=1
-                        if right_left_count_1 == effect.get(cv2.CAP_PROP_FRAME_COUNT):
-                            effect.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                            right_left_count_1 = 0
-                        right_left_count_2+=1
-                        if right_left_count_2 == another_3.get(cv2.CAP_PROP_FRAME_COUNT):
-                            another_1.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                            right_left_count_2 = 0
+                        okay, bg = hand_effect.read()
+                        ok, eff = pink.read()
 
-                        okay, bg = effect.read()
-                        if not okay:
-                            continue
-                        ok, eff = another_3.read()
-                        if not ok:
-                            continue
-                        ratio = float(right_left_count_1)/effect.get(cv2.CAP_PROP_FRAME_COUNT)
+                        hand_effect_count+=1
+                        if hand_effect_count == hand_effect.get(cv2.CAP_PROP_FRAME_COUNT):
+                            hand_effect.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            hand_effect_count = 0
+                        pink_count+=1
+                        if pink_count == pink.get(cv2.CAP_PROP_FRAME_COUNT):
+                            pink.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            pink_count = 0
+
+                        ratio = float(hand_effect_count)/hand_effect.get(cv2.CAP_PROP_FRAME_COUNT)
                         bg = cv2.resize(bg, (int(bg.shape[1]*(1+ratio*3)), int(bg.shape[0]*(1+ratio*3))))
                         w, h, c = bg.shape
                         e_w, e_h, e_c = eff.shape
@@ -483,24 +483,24 @@ def main():
                         # mp_drawing.draw_landmarks(frame, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
                         # mp_drawing.draw_landmarks(frame, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
                 
-                if results.left_hand_landmarks and results.right_hand_landmarks is None:
-                    right_count_1 = 0
-                    right_left_count_1 = 0
+                elif results.left_hand_landmarks and results.right_hand_landmarks is None:
+                    # hand_effect_count = 0
+                    # hand_effect_count = 0
                     if abs(results.left_hand_landmarks.landmark[3].x - results.left_hand_landmarks.landmark[6].x) < 0.05 and abs(results.left_hand_landmarks.landmark[3].y - results.left_hand_landmarks.landmark[6].y) < 0.05:
-                        left_count_1+=1
-                        if left_count_1 == effect.get(cv2.CAP_PROP_FRAME_COUNT):
-                            effect.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                            left_count_1 = 0
-                        left_count_2+=1
-                        if left_count_2 == another_1.get(cv2.CAP_PROP_FRAME_COUNT):
-                            another_1.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                            left_count_2 = 0
+                        okay, bg = hand_effect.read()
+
+                        _, eff = morning.read()
+
+                        hand_effect_count+=1
+                        if hand_effect_count == hand_effect.get(cv2.CAP_PROP_FRAME_COUNT):
+                            hand_effect.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            hand_effect_count = 0
+                        morning_count+=1
+                        if morning_count == morning.get(cv2.CAP_PROP_FRAME_COUNT):
+                            morning.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            morning_count = 0
                         
-                        okay, bg = effect.read()
-                        if not okay:
-                            continue
-                        _, eff = another_1.read()
-                        ratio = float(left_count_1)/effect.get(cv2.CAP_PROP_FRAME_COUNT)
+                        ratio = float(hand_effect_count)/hand_effect.get(cv2.CAP_PROP_FRAME_COUNT)
                         bg = cv2.resize(bg, (int(bg.shape[1]*(1+ratio*3)), int(bg.shape[0]*(1+ratio*3))))
                         w, h, c = bg.shape
                         e_w, e_h, e_c = eff.shape
@@ -525,23 +525,22 @@ def main():
                             
                     # mp_drawing.draw_landmarks(frame, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
                     
-                if results.right_hand_landmarks and results.left_hand_landmarks is None:
-                    left_count_1 = 0
-                    right_left_count_1 = 0
+                elif results.right_hand_landmarks and results.left_hand_landmarks is None:
+                    # hand_effect_count = 0
+                    # hand_effect_count = 0
                     if abs(results.right_hand_landmarks.landmark[3].x - results.right_hand_landmarks.landmark[6].x) < 0.05 and abs(results.right_hand_landmarks.landmark[3].y - results.right_hand_landmarks.landmark[6].y) < 0.05:
-                        right_count_1+=1
-                        if right_count_1 == effect.get(cv2.CAP_PROP_FRAME_COUNT):
-                            effect.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                            right_count_1 = 0
-                        right_count_2+=1
-                        if right_count_2 == another_2.get(cv2.CAP_PROP_FRAME_COUNT):
-                            another_2.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                            right_count_2 = 0
-                        okay, bg = effect.read()
-                        if not okay:
-                            continue
-                        _, eff = another_2.read()
-                        ratio = float(right_count_1)/effect.get(cv2.CAP_PROP_FRAME_COUNT)
+                        okay, bg = hand_effect.read()
+
+                        _, eff = magic.read()
+                        hand_effect_count+=1
+                        if hand_effect_count == hand_effect.get(cv2.CAP_PROP_FRAME_COUNT):
+                            hand_effect.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            hand_effect_count = 0
+                        magic_count+=1
+                        if magic_count == magic.get(cv2.CAP_PROP_FRAME_COUNT):
+                            magic.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            magic_count = 0
+                        ratio = float(hand_effect_count)/hand_effect.get(cv2.CAP_PROP_FRAME_COUNT)
                         bg = cv2.resize(bg, (int(bg.shape[1]*(1+ratio*3)), int(bg.shape[0]*(1+ratio*3))))
                         w, h, c = bg.shape
                         e_w, e_h, e_c = eff.shape
