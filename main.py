@@ -68,23 +68,23 @@ def main():
         print('Cannot read mouth effect')
         sys.exit(0)
     mouth_effect_count = 0
-    no_eff_frames = mouth_effect.shape[0]
+    no_mouth_eff_frames = mouth_effect.shape[0]
     # define effect opacity
-    alpha = 0.25
+    mouth_alpha = 0.25
 
     print('Reading mouth gif.................')
     # read gif frames
     gif_path = '.\\assets\\gifs\\ezgif.com-crop.gif'
-    gif_frames = read_asset(gif_path)
-    if gif_frames is None: 
+    mouth_gif_frames = read_asset(gif_path)
+    if mouth_gif_frames is None: 
         print('Cannot read mouth gif')
         sys.exit(0)
     
     print('Reading mouth audio..........')
     mouth_audio_path = './audio/ily_voice.mp3'
 
-    no_frames = gif_frames.shape[0]
-    gif_count = 0
+    no_mouth_frames = mouth_gif_frames.shape[0]
+    mouth_gif_count = 0
 
 
     ## setting pose filter
@@ -209,12 +209,12 @@ def main():
                         # blend background
                         bg_img = frame.copy()
                         # Create the overlay
-                        frame[mask == 0] = cv2.addWeighted(bg_img, 1-alpha, mouth_effect[mouth_effect_count%no_eff_frames], alpha, 0.0)[mask == 0]
+                        frame[mask == 0] = cv2.addWeighted(bg_img, 1-mouth_alpha, mouth_effect[mouth_effect_count%no_mouth_eff_frames], mouth_alpha, 0.0)[mask == 0]
                         
                         blurred_bg = cv2.GaussianBlur(frame, (21, 21), 0)
                         frame[face == (255, 255, 255)] = blurred_bg[face == (255, 255, 255)]
 
-                        gif_frame = gif_frames[gif_count%no_frames]
+                        gif_frame = mouth_gif_frames[mouth_gif_count%no_mouth_frames]
                         ### resize the gif frame to fit the mouth area
                         ## resize
                         gif_frame = resize_image(gif_frame, (mouth_width, mouth_height))
@@ -262,7 +262,7 @@ def main():
                         mixer.music.set_pos(0)
                    
                     # move to next frame of the gif
-                    gif_count += 1
+                    mouth_gif_count += 1
                     mouth_effect_count += 1
 
             #### pose filter
@@ -412,6 +412,8 @@ def main():
                     else:
                         mixer.music.stop()
                         count_sound = 1
+
+            #### hand gif 
             if (choice == 3):
                 # frame = cv2.rotate(frame, cv2.ROTATE_180)
                 # to improve performance, mark the image as not writeable to pass by reference instead of making a copy
