@@ -59,7 +59,7 @@ def cal_euclidean_distance(lm1, lm2):
 
 def main():
 
-    width, height = 640, 480 # change width and height of the webcam feed here
+    width, height =1280, 720 # change width and height of the webcam feed here
     # setting mouth filter
     print('Reading mouth effect.................')
     # read effect

@@ -19,6 +19,7 @@ For Vietnamese only: read our presentation [here](https://www.canva.com/design/D
 ## Instructions:
 Requirements: Python3, MediaPipe, Pygame, OpenCV, NumPy
 
+Step 0: Please install all packages required above before proceeding to Step 1
 Step 1: Execute the code `python main.py`. \
 Step 2:
 - Press 1 to turn on mouth filter.
@@ -41,7 +42,7 @@ Step 2:
 - ```assets/background``` : containing background/effect image that need blending
 - ```assets/gifs``` : containing gifs/images that need adding
 - ```audio/``` : containing audios for the filters
-- ```dev_files/``` : containing `.py` files that we just used to develop each filter
+- ```dev_files/``` : containing `.py` files that we just used to develop each filter 
 - ```README.md``` : description of this repository
 - ```main.py``` : our app
 - ```requirements.txt``` : required packages to run our app
