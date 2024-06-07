@@ -19,8 +19,8 @@ For Vietnamese only: read our presentation [here](https://www.canva.com/design/D
 ## Instructions:
 Requirements: Python3, MediaPipe, Pygame, OpenCV, NumPy
 
-Step 0: Please install all packages required above before proceeding to Step 1
-Step 1: Execute the code `python main.py`. \
+Step 0: Please install all packages required above before proceeding to Step 1 \
+Step 1: Execute the code `sh start.sh`. \
 Step 2:
 - Press 1 to turn on mouth filter.
 - Press 2 to turn on pose filter. 
